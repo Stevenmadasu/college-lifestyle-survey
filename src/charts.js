@@ -2,16 +2,22 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-const PURPLE_PALETTE = [
-  '#7c3aed',
-  '#8b5cf6',
-  '#a78bfa',
-  '#c4b5fd',
-  '#ddd6fe',
-  '#ede9fe',
-  '#6d28d9',
-  '#5b21b6',
+// Terminal-themed color palette
+const TERMINAL_PALETTE = [
+  '#39d353',  // green
+  '#58a6ff',  // blue
+  '#e3b341',  // yellow
+  '#f778ba',  // pink
+  '#bc8cff',  // purple
+  '#79c0ff',  // light blue
+  '#7ee787',  // light green
+  '#ffa657',  // orange
 ];
+
+// Global Chart.js defaults for terminal theme
+Chart.defaults.color = '#8b949e';
+Chart.defaults.font.family = "'Fira Code', 'JetBrains Mono', monospace";
+Chart.defaults.font.size = 11;
 
 const chartInstances = {};
 
@@ -22,9 +28,6 @@ function destroyChart(id) {
   }
 }
 
-/**
- * Count occurrences of each value in a data array.
- */
 function countValues(data, key) {
   const counts = {};
   data.forEach((row) => {
@@ -34,9 +37,6 @@ function countValues(data, key) {
   return counts;
 }
 
-/**
- * Count occurrences across array columns (like checkboxes).
- */
 function countArrayValues(data, key) {
   const counts = {};
   data.forEach((row) => {
@@ -50,9 +50,6 @@ function countArrayValues(data, key) {
   return counts;
 }
 
-/**
- * Render a bar chart.
- */
 function renderBarChart(canvasId, title, counts, orderedLabels) {
   destroyChart(canvasId);
   const canvas = document.getElementById(canvasId);
@@ -68,9 +65,11 @@ function renderBarChart(canvasId, title, counts, orderedLabels) {
       datasets: [
         {
           data: values,
-          backgroundColor: PURPLE_PALETTE.slice(0, labels.length),
-          borderRadius: 6,
-          maxBarThickness: 60,
+          backgroundColor: TERMINAL_PALETTE.slice(0, labels.length).map(c => c + 'cc'),
+          borderColor: TERMINAL_PALETTE.slice(0, labels.length),
+          borderWidth: 1,
+          borderRadius: 3,
+          maxBarThickness: 50,
         },
       ],
     },
@@ -78,32 +77,37 @@ function renderBarChart(canvasId, title, counts, orderedLabels) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: title, font: { size: 16, weight: 600 } },
+        title: {
+          display: true,
+          text: `> ${title}`,
+          font: { size: 13, weight: 600 },
+          color: '#c9d1d9',
+          align: 'start',
+        },
         legend: { display: false },
       },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { stepSize: 1, precision: 0 },
-          grid: { color: 'rgba(124,58,237,0.08)' },
+          ticks: { stepSize: 1, precision: 0, color: '#8b949e' },
+          grid: { color: 'rgba(48, 54, 61, 0.6)', drawBorder: false },
+          border: { color: '#30363d' },
         },
         x: {
+          ticks: { color: '#8b949e' },
           grid: { display: false },
+          border: { color: '#30363d' },
         },
       },
     },
   });
 }
 
-/**
- * Render a horizontal bar chart.
- */
 function renderHorizontalBarChart(canvasId, title, counts) {
   destroyChart(canvasId);
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
-  // Sort descending by count
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const labels = sorted.map((s) => s[0]);
   const values = sorted.map((s) => s[1]);
@@ -115,9 +119,11 @@ function renderHorizontalBarChart(canvasId, title, counts) {
       datasets: [
         {
           data: values,
-          backgroundColor: PURPLE_PALETTE.slice(0, labels.length),
-          borderRadius: 6,
-          maxBarThickness: 40,
+          backgroundColor: TERMINAL_PALETTE.slice(0, labels.length).map(c => c + 'cc'),
+          borderColor: TERMINAL_PALETTE.slice(0, labels.length),
+          borderWidth: 1,
+          borderRadius: 3,
+          maxBarThickness: 32,
         },
       ],
     },
@@ -126,26 +132,32 @@ function renderHorizontalBarChart(canvasId, title, counts) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: title, font: { size: 16, weight: 600 } },
+        title: {
+          display: true,
+          text: `> ${title}`,
+          font: { size: 13, weight: 600 },
+          color: '#c9d1d9',
+          align: 'start',
+        },
         legend: { display: false },
       },
       scales: {
         x: {
           beginAtZero: true,
-          ticks: { stepSize: 1, precision: 0 },
-          grid: { color: 'rgba(124,58,237,0.08)' },
+          ticks: { stepSize: 1, precision: 0, color: '#8b949e' },
+          grid: { color: 'rgba(48, 54, 61, 0.6)', drawBorder: false },
+          border: { color: '#30363d' },
         },
         y: {
+          ticks: { color: '#8b949e' },
           grid: { display: false },
+          border: { color: '#30363d' },
         },
       },
     },
   });
 }
 
-/**
- * Render a doughnut chart.
- */
 function renderDoughnutChart(canvasId, title, counts) {
   destroyChart(canvasId);
   const canvas = document.getElementById(canvasId);
@@ -161,9 +173,9 @@ function renderDoughnutChart(canvasId, title, counts) {
       datasets: [
         {
           data: values,
-          backgroundColor: PURPLE_PALETTE.slice(0, labels.length),
+          backgroundColor: TERMINAL_PALETTE.slice(0, labels.length).map(c => c + 'cc'),
+          borderColor: '#0d1117',
           borderWidth: 2,
-          borderColor: '#fff',
         },
       ],
     },
@@ -171,59 +183,37 @@ function renderDoughnutChart(canvasId, title, counts) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: title, font: { size: 16, weight: 600 } },
+        title: {
+          display: true,
+          text: `> ${title}`,
+          font: { size: 13, weight: 600 },
+          color: '#c9d1d9',
+          align: 'start',
+        },
         legend: {
           position: 'bottom',
-          labels: { padding: 16, usePointStyle: true },
+          labels: {
+            padding: 14,
+            usePointStyle: true,
+            color: '#8b949e',
+            font: { family: "'Fira Code', monospace", size: 10 },
+          },
         },
       },
     },
   });
 }
 
-/**
- * Render all charts on the results page.
- */
 export function renderAllCharts(data) {
-  // Total responses counter
   const totalEl = document.getElementById('total-responses');
   if (totalEl) totalEl.textContent = data.length;
 
-  // 1. College Year — bar chart (ordered)
   const yearOrder = [
-    '1st Year',
-    '2nd Year',
-    '3rd Year',
-    '4th Year',
-    '5th Year or more',
+    '1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year or more',
   ];
-  renderBarChart('chart-college-year', 'Year in College', countValues(data, 'college_year'), yearOrder);
-
-  // 2. Weekly Schedule — horizontal bar
-  renderHorizontalBarChart(
-    'chart-weekly-schedule',
-    'Weekly Schedule',
-    countValues(data, 'weekly_schedule')
-  );
-
-  // 3. Unwind Activities — horizontal bar (most popular)
-  renderHorizontalBarChart(
-    'chart-unwind',
-    'Most Popular Ways to Unwind',
-    countArrayValues(data, 'unwind_activities')
-  );
-
-  // 4. Self-time frequency — doughnut
-  renderDoughnutChart(
-    'chart-self-time',
-    'How Often Making Time for Yourself',
-    countValues(data, 'self_time_frequency')
-  );
-
-  // 5. Best mental reset — bar chart
-  renderBarChart(
-    'chart-mental-reset',
-    'Best Mental Reset Activity',
-    countValues(data, 'best_mental_reset')
-  );
+  renderBarChart('chart-college-year', 'college_year.distribution', countValues(data, 'college_year'), yearOrder);
+  renderHorizontalBarChart('chart-weekly-schedule', 'weekly_schedule.distribution', countValues(data, 'weekly_schedule'));
+  renderHorizontalBarChart('chart-unwind', 'unwind_activities.frequency', countArrayValues(data, 'unwind_activities'));
+  renderDoughnutChart('chart-self-time', 'self_time.breakdown', countValues(data, 'self_time_frequency'));
+  renderBarChart('chart-mental-reset', 'mental_reset.counts', countValues(data, 'best_mental_reset'));
 }

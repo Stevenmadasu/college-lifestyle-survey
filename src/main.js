@@ -24,6 +24,73 @@ const successSummary = document.getElementById('success-summary');
 const unwindOtherCheckbox = document.getElementById('unwind-other-checkbox');
 const otherInputWrapper = document.getElementById('other-input-wrapper');
 const unwindOtherText = document.getElementById('unwind-other-text');
+const typingText = document.getElementById('typing-text');
+const txnId = document.getElementById('txn-id');
+
+/* ============================
+   Matrix Rain Background
+   ============================ */
+function initMatrixRain() {
+  const canvas = document.getElementById('matrix-rain');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]|;:,.<>?/~`!';
+  const fontSize = 14;
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = Array.from({ length: columns }, () => Math.random() * -100);
+
+  function draw() {
+    ctx.fillStyle = 'rgba(10, 14, 23, 0.06)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#39d353';
+    ctx.font = `${fontSize}px 'Fira Code', monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i] += 0.5;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+initMatrixRain();
+
+/* ============================
+   Typing Animation
+   ============================ */
+function typeText(element, text, speed = 50) {
+  let i = 0;
+  element.textContent = '';
+  return new Promise((resolve) => {
+    function type() {
+      if (i < text.length) {
+        element.textContent += text[i];
+        i++;
+        setTimeout(type, speed);
+      } else {
+        resolve();
+      }
+    }
+    type();
+  });
+}
+
+// Start typing on landing
+typeText(typingText, './survey.exe --interactive', 45);
 
 /* ============================
    View Management
@@ -33,17 +100,16 @@ function showView(name) {
   views[name].classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Update navbar visibility
   if (name === 'landing') {
     navbar.style.display = 'none';
   } else {
     navbar.style.display = 'flex';
     navResultsLink.textContent =
-      name === 'results' ? 'Home' : 'View Results';
+      name === 'results' ? '[home]' : '[view results]';
   }
 }
 
-// Initialize: show landing, hide navbar
+// Initialize
 navbar.style.display = 'none';
 
 /* ============================
@@ -63,8 +129,7 @@ btnViewResultsSuccess.addEventListener('click', () => {
 
 navResultsLink.addEventListener('click', (e) => {
   e.preventDefault();
-  const current = navResultsLink.textContent;
-  if (current === 'Home') {
+  if (navResultsLink.textContent === '[home]') {
     showView('landing');
   } else {
     showView('results');
@@ -94,9 +159,9 @@ unwindOtherCheckbox.addEventListener('change', () => {
 surveyForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   formError.classList.remove('visible');
-
-  // Clear previous errors
-  document.querySelectorAll('.form-group.error').forEach((g) => g.classList.remove('error'));
+  document.querySelectorAll('.form-group.error').forEach((g) =>
+    g.classList.remove('error')
+  );
 
   // Gather values
   const currentLocation = surveyForm.querySelector('[name="current_location"]').value.trim();
@@ -107,7 +172,6 @@ surveyForm.addEventListener('submit', async (e) => {
   const bestMentalReset = surveyForm.querySelector('[name="best_mental_reset"]').value;
   const freeDayPlans = surveyForm.querySelector('[name="free_day_plans"]').value.trim();
 
-  // Checkboxes
   const unwindChecked = Array.from(
     surveyForm.querySelectorAll('[name="unwind"]:checked')
   ).map((cb) => cb.value);
@@ -136,9 +200,9 @@ surveyForm.addEventListener('submit', async (e) => {
 
   if (hasError) {
     formError.classList.add('visible');
-    // Scroll to first error
     const firstError = document.querySelector('.form-group.error');
-    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (firstError)
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
@@ -155,39 +219,43 @@ surveyForm.addEventListener('submit', async (e) => {
     free_day_plans: freeDayPlans,
   };
 
-  // If "Other" was checked, include it in the activities list  
   if (unwindChecked.includes('Other') && unwindOther) {
     payload.unwind_activities.push(unwindOther);
   }
 
-  // Disable button + show spinner
+  // Disable & show spinner
   btnSubmit.disabled = true;
-  btnSubmit.innerHTML = '<span class="spinner"></span>Submitting…';
+  btnSubmit.innerHTML = '<span class="spinner"></span> submitting...';
 
   try {
     await submitResponse(payload);
 
-    // Show success with summary
+    // Generate fake transaction ID
+    const fakeTxn = 'txn_' + Math.random().toString(36).substring(2, 10);
+    txnId.textContent = fakeTxn;
+
+    // Terminal-style success summary
     successSummary.innerHTML = `
-      <strong>Location:</strong> ${escapeHtml(currentLocation)}<br/>
-      <strong>State:</strong> ${escapeHtml(homeState)}<br/>
-      <strong>Year:</strong> ${escapeHtml(collegeYear)}<br/>
-      <strong>Schedule:</strong> ${escapeHtml(weeklySchedule)}<br/>
-      <strong>Unwind:</strong> ${escapeHtml(unwindChecked.join(', '))}${unwindOther ? ' — ' + escapeHtml(unwindOther) : ''}<br/>
-      <strong>Self-time:</strong> ${escapeHtml(selfTimeFrequency)}<br/>
-      <strong>Best Reset:</strong> ${escapeHtml(bestMentalReset)}<br/>
-      <strong>Free Day:</strong> ${escapeHtml(freeDayPlans)}
+      <span class="key">current_location:</span> <span class="val">"${escapeHtml(currentLocation)}"</span><br/>
+      <span class="key">home_state:</span> <span class="val">"${escapeHtml(homeState)}"</span><br/>
+      <span class="key">college_year:</span> <span class="val">"${escapeHtml(collegeYear)}"</span><br/>
+      <span class="key">weekly_schedule:</span> <span class="val">"${escapeHtml(weeklySchedule)}"</span><br/>
+      <span class="key">unwind_activities:</span> <span class="val">[${unwindChecked.map((v) => `"${escapeHtml(v)}"`).join(', ')}]</span><br/>
+      ${unwindOther ? `<span class="key">unwind_other:</span> <span class="val">"${escapeHtml(unwindOther)}"</span><br/>` : ''}
+      <span class="key">self_time_frequency:</span> <span class="val">"${escapeHtml(selfTimeFrequency)}"</span><br/>
+      <span class="key">best_mental_reset:</span> <span class="val">"${escapeHtml(bestMentalReset)}"</span><br/>
+      <span class="key">free_day_plans:</span> <span class="val">"${escapeHtml(freeDayPlans)}"</span>
     `;
     showView('success');
     surveyForm.reset();
     otherInputWrapper.classList.remove('visible');
   } catch (err) {
     console.error('Submit error:', err);
-    formError.textContent = 'Something went wrong. Please try again.';
+    formError.textContent = '[ERROR] Database write failed. Retry.';
     formError.classList.add('visible');
   } finally {
     btnSubmit.disabled = false;
-    btnSubmit.textContent = 'Submit';
+    btnSubmit.innerHTML = '<span class="text-green">&gt;</span> submit --save';
   }
 });
 

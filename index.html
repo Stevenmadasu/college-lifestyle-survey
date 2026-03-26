@@ -3,44 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>College Lifestyle Survey — BAIS:3300</title>
+    <title>survey.exe — College Lifestyle Survey</title>
     <meta
       name="description"
-      content="A short anonymous survey about college students' lifestyle, schedule, and favorite ways to unwind. Built for BAIS:3300 Spring 2026."
+      content="A short anonymous terminal-style survey about college students' lifestyle, schedule, and favorite ways to unwind. Built for BAIS:3300 Spring 2026."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- ===== NAVIGATION BAR ===== -->
-    <nav class="navbar" id="navbar">
-      <span class="navbar-title" id="nav-title">College Lifestyle Survey</span>
-      <a href="#" class="navbar-link" id="nav-results-link">View Results</a>
+    <!-- Matrix rain canvas -->
+    <canvas id="matrix-rain"></canvas>
+
+    <!-- CRT scanline overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- ===== NAVIGATION BAR (terminal title bar) ===== -->
+    <nav class="terminal-bar" id="navbar">
+      <div class="terminal-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title" id="nav-title">survey.exe</span>
+      <a href="#" class="terminal-nav-link" id="nav-results-link">[view results]</a>
     </nav>
 
     <!-- ===== VIEW: LANDING ===== -->
     <main>
       <section class="view active" id="view-landing">
         <div class="landing-container">
-          <h1 class="landing-title">College Lifestyle Survey</h1>
-          <p class="landing-desc">
-            Help us learn more about how college students balance their schedules
-            and unwind! This short survey asks about your background, weekly
-            routine, and favorite ways to reset. Your responses are
-            <strong>anonymous</strong> and will only be used for class research.
-          </p>
-          <div class="landing-actions">
-            <button class="btn btn-primary" id="btn-start-survey">
-              Take the Survey
-            </button>
-            <button class="btn btn-outline" id="btn-view-results-landing">
-              View Results
-            </button>
+          <pre class="ascii-art" aria-hidden="true">
+ _____ _   _ ______ _    _ _____ __   __
+/ ____| | | |  ____| |  | |  ___|\  \ /  /
+| (___ | | | | |__  | |  | | |__   \  V  /
+ \___ \| | | |  __| | |  | |  __|   \   /
+ ____) | |_| | |    | |__| | |___    | |
+|_____/ \___/|_|     \____/|_____|   |_|
+          </pre>
+          <div class="terminal-window landing-terminal">
+            <div class="terminal-header">
+              <span class="terminal-prompt">guest@bais3300:~$</span>
+              <span class="typing-text" id="typing-text"></span>
+              <span class="cursor-blink">█</span>
+            </div>
+            <div class="terminal-output" id="landing-output">
+              <p class="line line-delay-1"><span class="text-green">[INFO]</span> Loading survey module...</p>
+              <p class="line line-delay-2"><span class="text-green">[OK]</span> Module loaded: <span class="text-cyan">college_lifestyle_v2.6</span></p>
+              <p class="line line-delay-3"><span class="text-green">[OK]</span> Database connection: <span class="text-cyan">supabase://secure</span></p>
+              <p class="line line-delay-4"><span class="text-yellow">[NOTE]</span> All responses are <span class="text-bold">anonymous</span>. Data is used for class research only.</p>
+              <p class="line line-delay-5"><span class="text-green">[READY]</span> survey.exe is ready to accept input.</p>
+              <p class="line line-delay-6">&nbsp;</p>
+              <p class="line line-delay-6"><span class="text-dim">Select an option:</span></p>
+            </div>
+            <div class="landing-actions line line-delay-7">
+              <button class="btn-terminal" id="btn-start-survey">
+                <span class="text-green">&gt;</span> run survey.exe
+              </button>
+              <button class="btn-terminal" id="btn-view-results-landing">
+                <span class="text-cyan">&gt;</span> cat results.log
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -48,375 +76,325 @@
       <!-- ===== VIEW: SURVEY FORM ===== -->
       <section class="view" id="view-survey">
         <div class="survey-container">
-          <p class="survey-notice">
-            All fields are required. Your responses are anonymous.
-          </p>
-          <form id="survey-form" novalidate>
-            <!-- Q1: Current Location -->
-            <div class="form-group" id="group-q1">
-              <label class="form-label" for="q1"
-                >1. Where are you currently based?</label
-              >
-              <input
-                type="text"
-                id="q1"
-                name="current_location"
-                class="form-input"
-                placeholder="City or college town"
-                required
-              />
-            </div>
-
-            <!-- Q2: Home State -->
-            <div class="form-group" id="group-q2">
-              <label class="form-label" for="q2"
-                >2. What state are you from?</label
-              >
-              <select id="q2" name="home_state" class="form-select" required>
-                <option value="" disabled selected>Select a state…</option>
-                <option value="Alabama">Alabama</option>
-                <option value="Alaska">Alaska</option>
-                <option value="Arizona">Arizona</option>
-                <option value="Arkansas">Arkansas</option>
-                <option value="California">California</option>
-                <option value="Colorado">Colorado</option>
-                <option value="Connecticut">Connecticut</option>
-                <option value="Delaware">Delaware</option>
-                <option value="Florida">Florida</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Hawaii">Hawaii</option>
-                <option value="Idaho">Idaho</option>
-                <option value="Illinois">Illinois</option>
-                <option value="Indiana">Indiana</option>
-                <option value="Iowa">Iowa</option>
-                <option value="Kansas">Kansas</option>
-                <option value="Kentucky">Kentucky</option>
-                <option value="Louisiana">Louisiana</option>
-                <option value="Maine">Maine</option>
-                <option value="Maryland">Maryland</option>
-                <option value="Massachusetts">Massachusetts</option>
-                <option value="Michigan">Michigan</option>
-                <option value="Minnesota">Minnesota</option>
-                <option value="Mississippi">Mississippi</option>
-                <option value="Missouri">Missouri</option>
-                <option value="Montana">Montana</option>
-                <option value="Nebraska">Nebraska</option>
-                <option value="Nevada">Nevada</option>
-                <option value="New Hampshire">New Hampshire</option>
-                <option value="New Jersey">New Jersey</option>
-                <option value="New Mexico">New Mexico</option>
-                <option value="New York">New York</option>
-                <option value="North Carolina">North Carolina</option>
-                <option value="North Dakota">North Dakota</option>
-                <option value="Ohio">Ohio</option>
-                <option value="Oklahoma">Oklahoma</option>
-                <option value="Oregon">Oregon</option>
-                <option value="Pennsylvania">Pennsylvania</option>
-                <option value="Rhode Island">Rhode Island</option>
-                <option value="South Carolina">South Carolina</option>
-                <option value="South Dakota">South Dakota</option>
-                <option value="Tennessee">Tennessee</option>
-                <option value="Texas">Texas</option>
-                <option value="Utah">Utah</option>
-                <option value="Vermont">Vermont</option>
-                <option value="Virginia">Virginia</option>
-                <option value="Washington">Washington</option>
-                <option value="West Virginia">West Virginia</option>
-                <option value="Wisconsin">Wisconsin</option>
-                <option value="Wyoming">Wyoming</option>
-              </select>
-            </div>
-
-            <!-- Q3: College Year -->
-            <div class="form-group" id="group-q3">
-              <label class="form-label">3. What year are you in college?</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="college_year" value="1st Year" required />
-                  <span class="custom-radio"></span>
-                  1st Year
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="college_year" value="2nd Year" />
-                  <span class="custom-radio"></span>
-                  2nd Year
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="college_year" value="3rd Year" />
-                  <span class="custom-radio"></span>
-                  3rd Year
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="college_year" value="4th Year" />
-                  <span class="custom-radio"></span>
-                  4th Year
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="college_year"
-                    value="5th Year or more"
-                  />
-                  <span class="custom-radio"></span>
-                  5th Year or more
-                </label>
-              </div>
-            </div>
-
-            <!-- Q4: Weekly Schedule -->
-            <div class="form-group" id="group-q4">
-              <label class="form-label"
-                >4. How would you describe your weekly schedule?</label
-              >
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="weekly_schedule"
-                    value="Very busy, barely any free time"
-                    required
-                  />
-                  <span class="custom-radio"></span>
-                  Very busy, barely any free time
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="weekly_schedule"
-                    value="Pretty busy, but manageable"
-                  />
-                  <span class="custom-radio"></span>
-                  Pretty busy, but manageable
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="weekly_schedule"
-                    value="Balanced"
-                  />
-                  <span class="custom-radio"></span>
-                  Balanced
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="weekly_schedule"
-                    value="Mostly free"
-                  />
-                  <span class="custom-radio"></span>
-                  Mostly free
-                </label>
-              </div>
-            </div>
-
-            <!-- Q5: Unwind Activities (checkboxes) -->
-            <div class="form-group" id="group-q5">
-              <label class="form-label"
-                >5. What do you usually do to unwind or reset?</label
-              >
-              <p class="form-hint">Select all that apply.</p>
-              <div class="checkbox-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" name="unwind" value="Working out" />
-                  <span class="custom-checkbox"></span>
-                  Working out
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Watching shows or movies"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Watching shows or movies
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Playing video games"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Playing video games
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Hanging out with friends"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Hanging out with friends
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Listening to music"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Listening to music
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Going outside"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Going outside
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Scrolling social media"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Scrolling social media
-                </label>
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="unwind"
-                    value="Other"
-                    id="unwind-other-checkbox"
-                  />
-                  <span class="custom-checkbox"></span>
-                  Other
-                </label>
-              </div>
-              <!-- Conditional "Other" text input -->
-              <div class="other-input-wrapper hidden" id="other-input-wrapper">
-                <input
-                  type="text"
-                  id="unwind-other-text"
-                  class="form-input"
-                  placeholder="Tell us what else you do"
-                />
-              </div>
-            </div>
-
-            <!-- Q6: Self-time Frequency -->
-            <div class="form-group" id="group-q6">
-              <label class="form-label"
-                >6. How often do you make time for yourself each week?</label
-              >
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="self_time_frequency"
-                    value="Every day"
-                    required
-                  />
-                  <span class="custom-radio"></span>
-                  Every day
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="self_time_frequency"
-                    value="A few times a week"
-                  />
-                  <span class="custom-radio"></span>
-                  A few times a week
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="self_time_frequency"
-                    value="Once a week"
-                  />
-                  <span class="custom-radio"></span>
-                  Once a week
-                </label>
-                <label class="radio-label">
-                  <input
-                    type="radio"
-                    name="self_time_frequency"
-                    value="Rarely"
-                  />
-                  <span class="custom-radio"></span>
-                  Rarely
-                </label>
-              </div>
-            </div>
-
-            <!-- Q7: Best Mental Reset -->
-            <div class="form-group" id="group-q7">
-              <label class="form-label" for="q7"
-                >7. What activity helps you reset the most mentally?</label
-              >
-              <select
-                id="q7"
-                name="best_mental_reset"
-                class="form-select"
-                required
-              >
-                <option value="" disabled selected>Select an activity…</option>
-                <option value="Exercise">Exercise</option>
-                <option value="Sleep">Sleep</option>
-                <option value="Socializing">Socializing</option>
-                <option value="Alone time">Alone time</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Nature">Nature</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <!-- Q8: Free Day Plans -->
-            <div class="form-group" id="group-q8">
-              <label class="form-label" for="q8"
-                >8. If you had a completely free day, how would you spend
-                it?</label
-              >
-              <input
-                type="text"
-                id="q8"
-                name="free_day_plans"
-                class="form-input"
-                placeholder="Be as specific as you want…"
-                required
-              />
-            </div>
-
-            <!-- Submit -->
-            <button type="submit" class="btn btn-primary btn-submit" id="btn-submit">
-              Submit
-            </button>
-            <p class="form-error hidden" id="form-error">
-              Please fill out all required fields before submitting.
+          <div class="terminal-window">
+            <p class="terminal-system-msg">
+              <span class="text-green">[survey.exe]</span> <span class="text-dim">Running interactive survey... All fields required.</span>
             </p>
-          </form>
+
+            <form id="survey-form" novalidate>
+              <!-- Q1: Current Location -->
+              <div class="form-group" id="group-q1">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q1:</span> Where are you currently based?
+                </label>
+                <div class="input-wrapper">
+                  <span class="input-prefix">$</span>
+                  <input
+                    type="text"
+                    name="current_location"
+                    class="form-input"
+                    placeholder="city_or_college_town"
+                    required
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+
+              <!-- Q2: Home State -->
+              <div class="form-group" id="group-q2">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q2:</span> What state are you from?
+                </label>
+                <div class="input-wrapper">
+                  <span class="input-prefix">$</span>
+                  <select name="home_state" class="form-select" required>
+                    <option value="" disabled selected>-- select_state --</option>
+                    <option value="Alabama">Alabama</option>
+                    <option value="Alaska">Alaska</option>
+                    <option value="Arizona">Arizona</option>
+                    <option value="Arkansas">Arkansas</option>
+                    <option value="California">California</option>
+                    <option value="Colorado">Colorado</option>
+                    <option value="Connecticut">Connecticut</option>
+                    <option value="Delaware">Delaware</option>
+                    <option value="Florida">Florida</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Hawaii">Hawaii</option>
+                    <option value="Idaho">Idaho</option>
+                    <option value="Illinois">Illinois</option>
+                    <option value="Indiana">Indiana</option>
+                    <option value="Iowa">Iowa</option>
+                    <option value="Kansas">Kansas</option>
+                    <option value="Kentucky">Kentucky</option>
+                    <option value="Louisiana">Louisiana</option>
+                    <option value="Maine">Maine</option>
+                    <option value="Maryland">Maryland</option>
+                    <option value="Massachusetts">Massachusetts</option>
+                    <option value="Michigan">Michigan</option>
+                    <option value="Minnesota">Minnesota</option>
+                    <option value="Mississippi">Mississippi</option>
+                    <option value="Missouri">Missouri</option>
+                    <option value="Montana">Montana</option>
+                    <option value="Nebraska">Nebraska</option>
+                    <option value="Nevada">Nevada</option>
+                    <option value="New Hampshire">New Hampshire</option>
+                    <option value="New Jersey">New Jersey</option>
+                    <option value="New Mexico">New Mexico</option>
+                    <option value="New York">New York</option>
+                    <option value="North Carolina">North Carolina</option>
+                    <option value="North Dakota">North Dakota</option>
+                    <option value="Ohio">Ohio</option>
+                    <option value="Oklahoma">Oklahoma</option>
+                    <option value="Oregon">Oregon</option>
+                    <option value="Pennsylvania">Pennsylvania</option>
+                    <option value="Rhode Island">Rhode Island</option>
+                    <option value="South Carolina">South Carolina</option>
+                    <option value="South Dakota">South Dakota</option>
+                    <option value="Tennessee">Tennessee</option>
+                    <option value="Texas">Texas</option>
+                    <option value="Utah">Utah</option>
+                    <option value="Vermont">Vermont</option>
+                    <option value="Virginia">Virginia</option>
+                    <option value="Washington">Washington</option>
+                    <option value="West Virginia">West Virginia</option>
+                    <option value="Wisconsin">Wisconsin</option>
+                    <option value="Wyoming">Wyoming</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Q3: College Year -->
+              <div class="form-group" id="group-q3">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q3:</span> What year are you in college?
+                </label>
+                <div class="radio-group">
+                  <label class="option-label">
+                    <input type="radio" name="college_year" value="1st Year" required />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    1st_year
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="college_year" value="2nd Year" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    2nd_year
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="college_year" value="3rd Year" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    3rd_year
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="college_year" value="4th Year" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    4th_year
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="college_year" value="5th Year or more" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    5th_year+
+                  </label>
+                </div>
+              </div>
+
+              <!-- Q4: Weekly Schedule -->
+              <div class="form-group" id="group-q4">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q4:</span> How would you describe your weekly schedule?
+                </label>
+                <div class="radio-group">
+                  <label class="option-label">
+                    <input type="radio" name="weekly_schedule" value="Very busy, barely any free time" required />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    "Very busy, barely any free time"
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="weekly_schedule" value="Pretty busy, but manageable" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    "Pretty busy, but manageable"
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="weekly_schedule" value="Balanced" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    "Balanced"
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="weekly_schedule" value="Mostly free" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    "Mostly free"
+                  </label>
+                </div>
+              </div>
+
+              <!-- Q5: Unwind Activities (checkboxes) -->
+              <div class="form-group" id="group-q5">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q5:</span> What do you usually do to unwind or reset?
+                </label>
+                <p class="form-hint"><span class="text-dim">// select all that apply</span></p>
+                <div class="checkbox-group">
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Working out" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    working_out
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Watching shows or movies" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    watching_shows
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Playing video games" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    video_games
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Hanging out with friends" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    hanging_w_friends
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Listening to music" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    listening_to_music
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Going outside" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    going_outside
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Scrolling social media" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    scrolling_socials
+                  </label>
+                  <label class="option-label">
+                    <input type="checkbox" name="unwind" value="Other" id="unwind-other-checkbox" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    other
+                  </label>
+                </div>
+                <div class="other-input-wrapper hidden" id="other-input-wrapper">
+                  <div class="input-wrapper">
+                    <span class="input-prefix text-dim">└─$</span>
+                    <input
+                      type="text"
+                      id="unwind-other-text"
+                      class="form-input"
+                      placeholder="specify_other"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q6: Self-time Frequency -->
+              <div class="form-group" id="group-q6">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q6:</span> How often do you make time for yourself each week?
+                </label>
+                <div class="radio-group">
+                  <label class="option-label">
+                    <input type="radio" name="self_time_frequency" value="Every day" required />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    every_day
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="self_time_frequency" value="A few times a week" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    few_times_a_week
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="self_time_frequency" value="Once a week" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    once_a_week
+                  </label>
+                  <label class="option-label">
+                    <input type="radio" name="self_time_frequency" value="Rarely" />
+                    <span class="option-indicator">[<span class="option-fill"></span>]</span>
+                    rarely
+                  </label>
+                </div>
+              </div>
+
+              <!-- Q7: Best Mental Reset -->
+              <div class="form-group" id="group-q7">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q7:</span> What activity helps you reset the most mentally?
+                </label>
+                <div class="input-wrapper">
+                  <span class="input-prefix">$</span>
+                  <select name="best_mental_reset" class="form-select" required>
+                    <option value="" disabled selected>-- select_activity --</option>
+                    <option value="Exercise">Exercise</option>
+                    <option value="Sleep">Sleep</option>
+                    <option value="Socializing">Socializing</option>
+                    <option value="Alone time">Alone time</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Nature">Nature</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Q8: Free Day Plans -->
+              <div class="form-group" id="group-q8">
+                <label class="form-label">
+                  <span class="prompt">❯</span> <span class="text-yellow">q8:</span> If you had a completely free day, how would you spend it?
+                </label>
+                <div class="input-wrapper">
+                  <span class="input-prefix">$</span>
+                  <input
+                    type="text"
+                    name="free_day_plans"
+                    class="form-input"
+                    placeholder="describe_your_ideal_free_day"
+                    required
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <div class="submit-area">
+                <button type="submit" class="btn-terminal btn-submit" id="btn-submit">
+                  <span class="text-green">&gt;</span> submit --save
+                </button>
+                <p class="form-error hidden" id="form-error">
+                  <span class="text-red">[ERROR]</span> Missing required fields. Check highlighted inputs above.
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
 
       <!-- ===== VIEW: SUCCESS ===== -->
       <section class="view" id="view-success">
         <div class="success-container">
-          <div class="success-card">
-            <div class="success-icon">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                <circle cx="24" cy="24" r="24" fill="#ede9fe" />
-                <path
-                  d="M15 25l6 6 12-12"
-                  stroke="#7c3aed"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+          <div class="terminal-window">
+            <div class="success-block">
+              <pre class="success-ascii">
+  ___  _  __
+ / _ \| |/ /
+| | | | ' /
+| |_| | . \
+ \___/|_|\_\
+              </pre>
+              <p><span class="text-green">[SUCCESS]</span> Response recorded in database.</p>
+              <p><span class="text-dim">Transaction ID:</span> <span class="text-cyan" id="txn-id"></span></p>
+              <p>&nbsp;</p>
+              <p><span class="text-yellow">--- payload_dump ---</span></p>
+              <div class="success-summary" id="success-summary"></div>
+              <p><span class="text-yellow">--- end dump ---</span></p>
+              <p>&nbsp;</p>
+              <button class="btn-terminal" id="btn-view-results-success">
+                <span class="text-cyan">&gt;</span> cat results.log
+              </button>
             </div>
-            <h2 class="success-title">Thank you!</h2>
-            <p class="success-desc">Your response has been recorded.</p>
-            <div class="success-summary" id="success-summary"></div>
-            <button
-              class="btn btn-primary"
-              id="btn-view-results-success"
-            >
-              View Results
-            </button>
           </div>
         </div>
       </section>
@@ -425,24 +403,44 @@
       <section class="view" id="view-results">
         <div class="results-container">
           <div class="results-header">
-            <p class="results-label">TOTAL RESPONSES</p>
-            <p class="results-count" id="total-responses">0</p>
+            <p class="terminal-system-msg">
+              <span class="text-green">[survey.exe]</span> Fetching aggregate data...
+            </p>
+            <p class="results-stats">
+              <span class="text-dim">total_responses =</span>
+              <span class="text-green results-count" id="total-responses">0</span>
+            </p>
           </div>
 
           <div class="chart-grid">
             <div class="chart-card">
+              <div class="chart-card-header">
+                <span class="text-dim">// chart:</span> <span class="text-cyan">college_year.bar</span>
+              </div>
               <canvas id="chart-college-year"></canvas>
             </div>
             <div class="chart-card">
+              <div class="chart-card-header">
+                <span class="text-dim">// chart:</span> <span class="text-cyan">weekly_schedule.hbar</span>
+              </div>
               <canvas id="chart-weekly-schedule"></canvas>
             </div>
             <div class="chart-card chart-card-wide">
+              <div class="chart-card-header">
+                <span class="text-dim">// chart:</span> <span class="text-cyan">unwind_activities.hbar</span>
+              </div>
               <canvas id="chart-unwind"></canvas>
             </div>
             <div class="chart-card">
+              <div class="chart-card-header">
+                <span class="text-dim">// chart:</span> <span class="text-cyan">self_time.doughnut</span>
+              </div>
               <canvas id="chart-self-time"></canvas>
             </div>
             <div class="chart-card">
+              <div class="chart-card-header">
+                <span class="text-dim">// chart:</span> <span class="text-cyan">mental_reset.bar</span>
+              </div>
               <canvas id="chart-mental-reset"></canvas>
             </div>
           </div>
@@ -452,7 +450,7 @@
 
     <!-- ===== FOOTER ===== -->
     <footer class="footer">
-      Survey by Steven Madasu, BAIS:3300 – Spring 2026.
+      <span class="text-dim">/*</span> survey by Steven Madasu — BAIS:3300, Spring 2026 <span class="text-dim">*/</span>
     </footer>
 
     <script type="module" src="/src/main.js"></script>
